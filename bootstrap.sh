@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-echo "export PS1='GIStack: '" >> /home/vagrant/.bashrc
+cat <<EOF >> /home/vagrant/.bashrc
+# Custom PS1
+PS1="GIStack: "
+
+# Switch to /vagrant on login
+cd /vagrant
+EOF
 
 echo Update repositories and get upgrades...
 apt-get update > /dev/null
@@ -9,16 +15,13 @@ echo Installing Git...
 apt-get install -y git > /dev/null
 
 echo Installing NGINX...
-apt-get install -y nginx 2>&1 > /dev/null
+apt-get install -y nginx > /dev/null
 rm -rf /usr/share/nginx/html
 [ ! -d /vagrant/html ] && /vagrant/html
 ln -fs /vagrant/html /usr/share/nginx/html
 
 echo Installing Tomcat 7...
 apt-get install -y tomcat7 > /dev/null
-rm -rf /var/lib/tomcat7/webapps
-[ ! -d /vagrant/war ] && /vagrant/war
-#ln -fs /vagrant/war /var/lib/tomcat7/webapps
 
 echo Installing PostgreSQL and PostGIS...
 apt-get install -y postgresql-{,client-,contrib-,server-dev-}9.3 postgresql-9.3-postgis-2.1 > /dev/null
@@ -36,6 +39,8 @@ echo Installing GeoServer...
 GEOZIP='/var/cache/apt/archives/geoserver.zip'
 GEOURL="http://sourceforge.net/projects/geoserver/files/GeoServer/2.6.0/geoserver-2.6.0-war.zip"
 if [ ! -f $GEOZIP ]; then
-  wget -q -O $GEOZIP $GEOURL geoserver.war
+  wget -q -O $GEOZIP $GEOURL
 fi
-unzip -f -d /vagrant/war $GEOZIP
+unzip -d /var/lib/tomcat7/webapps/ $GEOZIP
+
+echo "Success! Geoserver available at http://localhost:8080/geoserver"
